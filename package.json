@@ -1,0 +1,22 @@
+{
+  "name": "battlehack",
+  "version": "0.0.1",
+  "description": "crowd oppinions",
+  "main": "server.js",
+  "scripts": {
+    "test": "console.log('hello');"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/phairow/battlehack"
+  },
+  "keywords": [
+    "battlehack",
+    "crowd",
+    "sourcing",
+    "advice",
+    "Q&A"
+  ],
+  "author": "",
+  "license": "MIT"
+}
