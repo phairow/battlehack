@@ -5,7 +5,9 @@ var url = require('url'),
     app = express(),
     twilio = require('twilio'),
     twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3'),
-    paypal_sdk = require('paypal-rest-sdk');
+    paypal_sdk = require('paypal-rest-sdk'),
+    userEmail = 'phairow@yahoo.com',
+    userName = 'Rai Phairow';
 
 
 paypal_sdk.configure({
@@ -49,7 +51,7 @@ console.log(queryvars)
 			var seed = randomString(2, '1234567890') + randomString(4).toLowerCase();
 
 			var postdata = {
-				email: 'myemail@email.com',
+				email: userEmail,
 				question: queryvars.q,
 				seed: seed,
 				created: (new Date()).getTime()
@@ -427,6 +429,16 @@ io.sockets.on('connection', function (socket) {
 				if (data.result.length) {
 					for(var i = 0; i < data.result.length; i++) {
 						socket.emit('answer', { data: data.result[i].message });
+
+						var headers = {
+
+						};
+
+						var callback = function (data) {
+							console.log(data)
+						};
+
+						httpGet('https://sendgrid.com/api/mail.send.json?api_user=vijaym&api_key=battlehack123&to=' + userEmail + '&toname=' + userName + '&subject=Answer Received&text=' + escape(data.result[i].message) + '&from=info@domain.com', headers, callback);
 					}
 				} else {
 					setTimeout(checkAnswer, 5000);
