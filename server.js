@@ -4,7 +4,7 @@ var url = require('url'),
 	express = require('express'),
     app = express(),
     twilio = require('twilio'),
-    twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3');;
+    twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3');
 
 app.configure(function(){
     app.use(express.bodyParser());
@@ -34,27 +34,92 @@ app.post('/searchresults', function (req, res) {
 			'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
 		};
 
-		var callback = function (data) {
-			console.log('status: ', data.status)
-			for (var i = 0; i < data.result.length; i++ ) {
-				console.log(data.result);
-				twillioclient.sms.messages.create({
-					//To: '+13146046275',
-					To: '+1' + data.result[i].phone,
-					From: '+14253411048',
-					Body: 'test'
-				}, function (error, message) {
-					console.log('error: ', error);
-					console.log('message: ', message);
+		var done = true;
 
-					res.render('searchexpert', {})
-				});
+		var seed = randomString(2, '1234567890') + randomString(4).toLowerCase();
+
+		var postdata = {
+			email: 'myemail@email.com',
+			question: req.body.q,
+			seed: seed,
+			created: (new Date()).getTime()
+		};
+
+		var callback = function (status) { 
+
+			var callback = function (data) {
+	
+				for (var i = 0; i < data.result.length; i++ ) {
+					done = false;
+					twillioclient.sms.messages.create({
+						//To: '+13146046275',
+						To: '+1' + data.result[i].phone,
+						From: '+14253411048',
+						Body: seed + ' ' + req.body.q
+					}, function (error, message) {
+						//console.log('error: ', error);
+						//console.log('message: ', message);
+
+						res.render('searchexpert', {});
+					});
+				}
+
+				if (!done) {
+					var checkDone = function () {
+						twillioclient.sms.messages.list(function(err, data) {
+							if (data.sms_messages.length) {
+								var found = false;
+								data.sms_messages.forEach(function(message) {
+									if (message.direction == "inbound" && message.body.indexOf(seed) > -1) {
+										found = true;
+										console.log(message.body);
+
+										var headers = {
+											'Content-Type': 'application/json',
+											'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+										};
+
+										var callback = function (status) {
+											console.log(status);
+										};
+
+										var data = {
+											message: message.body.replace(seed + ' ', ''),
+											to: message.to,
+											from: message.from,
+											status: message.status,
+											seed: seed
+										};
+
+										httpPost('https://cloudsupport.azure-mobile.net/tables/answers', headers, data, callback);
+									}
+								});
+
+								if (!found) {
+									setTimeout(checkDone, 1000);
+								}
+
+							} else {
+								setTimeout(checkDone, 1000);
+							}
+						});
+					};
+
+					setTimeout(checkDone, 1000);
+				}
 			}
-		}
 
-		var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories,\'' + req.body.category + '\')%20ne%20-1';
-		console.log(url)
-		httpGet(url, headers, callback);
+			var headers = {
+				'Content-Type': 'application/json',
+				'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+			};
+
+			var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories,\'' + req.body.category + '\')%20ne%20-1';
+			console.log(url)
+			httpGet(url, headers, callback);
+		};
+
+		httpPost('https://cloudsupport.azure-mobile.net/tables/questions', headers, postdata, callback);
 
 	} else {
 
@@ -262,4 +327,14 @@ app.listen(process.env.PORT || 3000);
 			
 			req.write(data);
 			req.end();
+	}
+
+	function randomString(len, charSet) {
+	    charSet = charSet || 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz';
+	    var randomString = '';
+	    for (var i = 0; i < len; i++) {
+	    	var randomPoz = Math.floor(Math.random() * charSet.length);
+	    	randomString += charSet.substring(randomPoz,randomPoz+1);
+	    }
+	    return randomString;
 	}
