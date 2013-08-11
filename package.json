@@ -20,7 +20,8 @@
   "dependencies": {
   	"express": "3.x",
     "ejs": "0.x",
-    "twilio": "1.x"
+    "twilio": "1.x",
+    "socket.io": "0.x"
   },
   "author": "",
   "license": "MIT"

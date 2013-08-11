@@ -1,1 +1,23 @@
-your request has been submitted
+
+<script src="/socket.io/socket.io.js"></script>
+<script>
+  var socket = io.connect();
+
+   socket.on('connect', function () {
+    socket.emit('seed', '<%= seed %>');
+
+	  socket.on('answer', function (data) {
+		    document.getElementById('result').innerHTML = 'Your answer has arrived<div>' + data.data + '</div>';
+	  });
+  });
+
+</script>
+
+<div id="result">
+
+	your request has been submitted
+
+	<div>
+		waiting...
+	</div>
+</div>

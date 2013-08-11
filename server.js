@@ -60,7 +60,7 @@ app.post('/searchresults', function (req, res) {
 						//console.log('error: ', error);
 						//console.log('message: ', message);
 
-						res.render('searchexpert', {});
+						res.render('searchexpert', { seed: seed});
 					});
 				}
 
@@ -203,10 +203,6 @@ app.get('/useragreement', function (req, res) {
 });
 
 
-
-app.listen(process.env.PORT || 3000);
-
-
 	/**
 	 * http client get request
 	 */
@@ -338,3 +334,42 @@ app.listen(process.env.PORT || 3000);
 	    }
 	    return randomString;
 	}
+
+
+var server = http.createServer(app).listen(process.env.PORT || 3000);
+
+
+var io = require('socket.io').listen(server);
+io.configure(function () {                //Added
+  io.set('transports', ['xhr-polling']);  //Added
+}); 
+
+io.sockets.on('connection', function (socket) {
+
+	socket.on('seed', function (seed) {
+
+		var  checkAnswer = function () {
+
+			var headers = {
+				'Content-Type': 'application/json',
+				'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+			};
+
+			var cb = function (data) {
+				console.log(data.result)
+				if (data.result.length) {
+					for(var i = 0; i < data.result.length; i++) {
+						socket.emit('answer', { data: data.result[i].message });
+					}
+				} else {
+					setTimeout(checkAnswer, 5000);
+				}
+			};
+
+			httpGet('https://cloudsupport.azure-mobile.net/tables/answers?$filter=(seed%20eq%20\'' + escape(seed) + '\')', headers, cb);
+	  	};
+
+	  	setTimeout(checkAnswer, 5000);
+	});
+
+});
