@@ -4,7 +4,16 @@ var url = require('url'),
 	express = require('express'),
     app = express(),
     twilio = require('twilio'),
-    twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3');
+    twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3'),
+    paypal_sdk = require('paypal-rest-sdk');
+
+
+paypal_sdk.configure({
+    'host': 'api.sandbox.paypal.com',
+    'port': '',
+    'client_id': 'Acj30BBhcO30NfQyTtWjhchRPXWAydb1_ECexc7x9AQpwsHmrV51aT8luLcu',
+    'client_secret': 'EIHMERB3WkD-RpBHPJFFaJLFlX7dgYPz9-hZDSZ2Xgwi7fV2e8K_OWofJnT4'
+});
 
 app.configure(function(){
     app.use(express.bodyParser());
@@ -21,106 +30,150 @@ app.configure(function(){
 });
 
 app.get('/', function (req, res) {
-
 	res.render('index', {})
 });
 
-app.post('/searchresults', function (req, res) {
-
-	if (req.body.expert) {
-
-		var headers = {
-			'Content-Type': 'application/json',
-			'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
-		};
-
-		var done = true;
-
-		var seed = randomString(2, '1234567890') + randomString(4).toLowerCase();
-
-		var postdata = {
-			email: 'myemail@email.com',
-			question: req.body.q,
-			seed: seed,
-			created: (new Date()).getTime()
-		};
-
-		var callback = function (status) { 
-
-			var callback = function (data) {
-	
-				for (var i = 0; i < data.result.length; i++ ) {
-					done = false;
-					twillioclient.sms.messages.create({
-						//To: '+13146046275',
-						To: '+1' + data.result[i].phone,
-						From: '+14253411048',
-						Body: seed + ' ' + req.body.q
-					}, function (error, message) {
-						//console.log('error: ', error);
-						//console.log('message: ', message);
-
-						res.render('searchexpert', { seed: seed});
-					});
-				}
-
-				if (!done) {
-					var checkDone = function () {
-						twillioclient.sms.messages.list(function(err, data) {
-							if (data.sms_messages.length) {
-								var found = false;
-								data.sms_messages.forEach(function(message) {
-									if (message.direction == "inbound" && message.body.indexOf(seed) > -1) {
-										found = true;
-										console.log(message.body);
-
-										var headers = {
-											'Content-Type': 'application/json',
-											'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
-										};
-
-										var callback = function (status) {
-											console.log(status);
-										};
-
-										var data = {
-											message: message.body.replace(seed + ' ', ''),
-											to: message.to,
-											from: message.from,
-											status: message.status,
-											seed: seed
-										};
-
-										httpPost('https://cloudsupport.azure-mobile.net/tables/answers', headers, data, callback);
-									}
-								});
-
-								if (!found) {
-									setTimeout(checkDone, 1000);
-								}
-
-							} else {
-								setTimeout(checkDone, 1000);
-							}
-						});
-					};
-
-					setTimeout(checkDone, 1000);
-				}
-			}
+app.get('/paymentprocess', function (req, res) {
+		var url = require('url'),
+			queryvars = parseQueryString(url.parse(req.url).query);
+console.log(queryvars)
+		if (queryvars.success == 'true') {
 
 			var headers = {
 				'Content-Type': 'application/json',
 				'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
 			};
 
-			var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories,\'' + req.body.category + '\')%20ne%20-1';
-			console.log(url)
-			httpGet(url, headers, callback);
+			var done = true;
+
+			var seed = randomString(2, '1234567890') + randomString(4).toLowerCase();
+
+			var postdata = {
+				email: 'myemail@email.com',
+				question: queryvars.q,
+				seed: seed,
+				created: (new Date()).getTime()
+			};
+
+			var callback = function (status) { 
+
+				var callback = function (data) {
+		
+					for (var i = 0; i < data.result.length; i++ ) {
+						done = false;
+						twillioclient.sms.messages.create({
+							//To: '+13146046275',
+							To: '+1' + data.result[i].phone,
+							From: '+14253411048',
+							Body: seed + ' ' + queryvars.q
+						}, function (error, message) {
+							//console.log('error: ', error);
+							//console.log('message: ', message);
+
+							res.render('searchexpert', { seed: seed});
+						});
+					}
+
+					if (!done) {
+						var checkDone = function () {
+							twillioclient.sms.messages.list(function(err, data) {
+								if (data.sms_messages.length) {
+									var found = false;
+									data.sms_messages.forEach(function(message) {
+										if (message.direction == "inbound" && message.body.indexOf(seed) > -1) {
+											found = true;
+											console.log(message.body);
+
+											var headers = {
+												'Content-Type': 'application/json',
+												'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+											};
+
+											var callback = function (status) {
+												console.log(status);
+											};
+
+											var data = {
+												message: message.body.replace(seed + ' ', ''),
+												to: message.to,
+												from: message.from,
+												status: message.status,
+												seed: seed
+											};
+
+											httpPost('https://cloudsupport.azure-mobile.net/tables/answers', headers, data, callback);
+										}
+									});
+
+									if (!found) {
+										setTimeout(checkDone, 1000);
+									}
+
+								} else {
+									setTimeout(checkDone, 1000);
+								}
+							});
+						};
+
+						setTimeout(checkDone, 1000);
+					}
+				}
+
+				var headers = {
+					'Content-Type': 'application/json',
+					'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+				};
+
+				var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories,\'' + queryvars.category + '\')%20ne%20-1';
+				console.log(url)
+				httpGet(url, headers, callback);
+			};
+
+			httpPost('https://cloudsupport.azure-mobile.net/tables/questions', headers, postdata, callback);
+		} else {
+			res.render('paymentcancel', {});
+		}
+});
+
+app.post('/searchresults', function (req, res) {
+
+	if (req.body.expert) {
+		var url = req.protocol + "://" + req.get('host') + (req.get('port')?':' + req.get('host'):'') + '/paymentprocess'
+
+		var create_payment_json = {
+		    "intent": "sale",
+		    "payer": {
+		        "payment_method": "paypal"
+		    },
+		    "redirect_urls": {
+		        "return_url": url + '?success=true&q=' + escape(req.body.q) + '&category=' + escape(req.body.category) ,
+		        "cancel_url": url + '?success=false&q=' + escape(req.body.q) + '&category=' + escape(req.body.category) 
+		    },
+		    "transactions": [{
+		        "amount": {
+		            "currency": "USD",
+		            "total": "1.00"
+		        },
+		        "description": "Expert Advice."
+		    }]
 		};
 
-		httpPost('https://cloudsupport.azure-mobile.net/tables/questions', headers, postdata, callback);
+		paypal_sdk.payment.create(create_payment_json, function (error, payment) {
+		    if (error) {
+		        throw error;
+		    } else {
+		        console.log("Create Payment Response");
+		        console.log(payment);
 
+		        if (payment.links && payment.links.length) {
+		        	for (var i = 0; i < payment.links.length; i++) {
+		        		if (payment.links[i].rel == "approval_url") {
+		        			res.redirect(payment.links[i].href);
+		        		}
+		        	}
+		        }
+		    }
+		});
 	} else {
 
 		var url = 'https://hol.inbenta.com/api.php?action=search&project=hol_demo_en&query=' + escape(req.body.q) + '&_=' + (new Date()).getTime();
@@ -187,20 +240,20 @@ app.post('/registersubmit', function (req, res) {
 
 	httpPost('https://cloudsupport.azure-mobile.net/tables/providers', headers, data, callback);
 
-	res.render('registersubmit', {postvars: req.body})
-});
+		res.render('registersubmit', {postvars: req.body})
+	});
 
-app.get('/paypalauthcomplete', function (req, res) {
-	res.render('paypalauthcomplete', {})
-});
+	app.get('/paypalauthcomplete', function (req, res) {
+		res.render('paypalauthcomplete', {})
+	});
 
-app.get('/privacy', function (req, res) {
-	res.render('privacy', {})
-});
+	app.get('/privacy', function (req, res) {
+		res.render('privacy', {})
+	});
 
-app.get('/useragreement', function (req, res) {
-	res.render('useragreement', {})
-});
+	app.get('/useragreement', function (req, res) {
+		res.render('useragreement', {})
+	});
 
 
 	/**
@@ -334,7 +387,21 @@ app.get('/useragreement', function (req, res) {
 	    }
 	    return randomString;
 	}
+	
+	function parseQueryString(text) {
+		var result = {}, parts;
 
+		if (text) {
+			parts = text.split("&");
+			for (var i = 0; i < parts.length; i++) {
+				var part = parts[i];
+				var kvp = part.split("=");
+				result[kvp[0]] = kvp[1];
+			}
+		}
+
+		return result;
+	}
 
 var server = http.createServer(app).listen(process.env.PORT || 3000);
 
