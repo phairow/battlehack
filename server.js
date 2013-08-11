@@ -3,7 +3,9 @@ var url = require('url'),
 	https = require('https'),
 	express = require('express'),
 	azure = require('azure'),
-    app = express();
+    app = express(),
+    twilio = require('twilio'),
+    twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3');;
 
 app.configure(function(){
     app.use(express.bodyParser());
@@ -20,11 +22,55 @@ app.configure(function(){
 });
 
 app.get('/', function (req, res) {
+
 	res.render('index', {})
 });
 
 app.post('/searchresults', function (req, res) {
-	res.render('searchresults', {})
+
+	if (req.body.expert) {
+
+		var headers = {
+			'Content-Type': 'application/json',
+			'X-ZUMO-APPLICATION': 'kYDznzAyiivpjkHWkcuwCSRxzWYzTJ50'
+		};
+
+		var callback = function (data) {
+			console.log('status: ', data.status)
+			for (var i = 0; i < data.result.length; i++ ) {
+				console.log(data.result);
+				twillioclient.sms.messages.create({
+					//To: '+13146046275',
+					To: '+1' + data.result[i].phone,
+					From: '+14253411048',
+					Body: 'test'
+				}, function (error, message) {
+					console.log('error: ', error);
+					console.log('message: ', message);
+
+					res.render('searchexpert', {})
+				});
+			}
+		}
+
+		var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories, \'' + req.body.category + '\')%20ne%20-1';
+		console.log(url)
+		httpGet(url, headers, callback);
+
+	} else {
+
+		var url = 'https://hol.inbenta.com/api.php?action=search&project=hol_demo_en&query=' + escape(req.body.q) + '&_=' + (new Date()).getTime();
+
+		var callback = function (data) {
+			console.log(data);
+
+			res.render('searchresults', data.result)
+		};
+
+		console.log('make request')
+		httpGet(url, null, callback);
+	}
+
 });
 
 app.get('/login', function (req, res) {

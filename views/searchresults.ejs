@@ -1,1 +1,20 @@
-result
+
+<% for (var i = 0; i < results.length; i++) {
+
+%>
+<div>
+	<h1>
+		<%-
+			results[i].title
+		%>
+	</h1>
+</div>
+<div>
+	<%-
+		results[i].answer
+	%>
+</div>
+
+<%	
+
+} %>
