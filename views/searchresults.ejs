@@ -1,18 +1,31 @@
+<script language="JavaScript" type="text/javascript" src="http://humanityonline.com/HOL_Avatar.js"></script>
+
+<script language="javascript">
+
+        HOL_SetupAvatar("Avatar", "360", "240");
+        function HOL_OnFlashLoaded() {
+           HOL_PlayFLV("Avatar", "/Humanity_Loop.flv");
+        }
+
+        function HOL_OnVideoDone(avatar, url) {
+           HOL_PlayFLV("Avatar", "/Humanity_Loop.flv");
+        }
+        function HOL_PlayAnswer(url){
+           HOL_PlayFLV("Avatar", url);
+        }
+
+</script>
+
+<div id="avatar-home"><div id="Avatar"></div>
 
 <% for (var i = 0; i < results.length; i++) {
 
 %>
 <div>
 	<h1>
-		<%-
-			results[i].title
-		%>
+
+<a href='#' onclick='HOL_PlayAnswer("<%- results[i].video %>")'> <%- results[i].title %> </a>
 	</h1>
-</div>
-<div>
-	<%-
-		results[i].answer
-	%>
 </div>
 
 <%	

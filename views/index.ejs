@@ -1,3 +1,20 @@
+<script language="JavaScript" type="text/javascript" src="http://humanityonline.com/HOL_Avatar.js"></script>
+
+<script language="javascript">
+
+        HOL_SetupAvatar("Avatar", "360", "240");
+        function HOL_OnFlashLoaded() {
+           HOL_PlayFLV("Avatar", "/Humanity_Loop.flv");
+        }
+
+        function HOL_OnVideoDone(avatar, url) {
+           HOL_PlayFLV("Avatar", "/Humanity_Loop.flv");
+        }
+                   
+</script>
+
+<div id="avatar-home"><div id="Avatar"></div>
+
 <form action="/searchresults" method="post">
 	<div>
 		<h1>Search</h1> 
@@ -17,3 +34,4 @@
 		<input type="submit"></input>
 	</div>
 </form>
+
