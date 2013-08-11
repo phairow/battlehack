@@ -94,7 +94,7 @@ app.get('/useragreement', function (req, res) {
 
 
 
-app.listen(3000);
+app.listen(process.env.PORT || 3000);
 
 
 	/**

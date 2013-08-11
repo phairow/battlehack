@@ -1,0 +1,31 @@
+Sat Aug 10 2013 21:24:26 GMT-0700 (PDT):
+{ [Error: No account information found. Please import credentials using "azure account import <file>".]
+  stack: [Getter/Setter],
+  __frame: 
+   { name: 'lookupSiteWebSpace',
+     line: 588,
+     file: '/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js',
+     prev: 
+      { name: 'lookupSiteNameAndWebSpace',
+        line: 603,
+        file: '/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js',
+        prev: [Object],
+        active: false,
+        offset: 7,
+        col: 4 },
+     active: false,
+     offset: 2,
+     col: 16 },
+  rawStack: [Getter] }
+Error: No account information found. Please import credentials using "azure account import <file>".
+    at Object.readFromFile (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/util/keyFiles.js:32:11)
+    at AzureCli.exports.init.account.managementCertificate (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/account._js:476:21)
+    at createService (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/util/utils.js:41:21)
+    at Object.exports.createWebsiteManagementService (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/util/utils.js:70:10)
+    at createWebsiteManagementService (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js:1139:18)
+    at site_doSitesGet__18 (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js:1010:17)
+    at lookupSiteWebSpace (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js:590:16)
+    at lookupSiteNameAndWebSpace (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js:610:4)
+    at ensureRepositoryUri (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site._js:678:19)
+    at __2 (/home/rai/nvm/v0.8.8/lib/node_modules/azure-cli/lib/commands/site.log._js:81:26)
+
