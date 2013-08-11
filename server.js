@@ -67,7 +67,7 @@ console.log(queryvars)
 							//To: '+13146046275',
 							To: '+1' + data.result[i].phone,
 							From: '+14253411048',
-							Body: seed + ' ' + queryvars.q
+							Body: seed + ' ' + unescape(queryvars.q)
 						}, function (error, message) {
 							//console.log('error: ', error);
 							//console.log('message: ', message);
