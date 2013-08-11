@@ -8,7 +8,7 @@
     socket.emit('seed', '<%= seed %>');
 
 	  socket.on('answer', function (data) {
-		    document.getElementById('result').innerHTML = 'Your answer has arrived<div>' + data.data + '</div>';
+		    document.getElementById('result').innerHTML = 'Your answer has arrived<div><p>' + data.data + '</p></div>';
 	  });
   });
 
@@ -19,9 +19,9 @@
 
 		your request has been submitted
 
-		<div>
+		<p>
 			waiting...
-		</div>
+		</p>
 	</div>
 </div>
 <%- include layoutBottom.ejs %>
