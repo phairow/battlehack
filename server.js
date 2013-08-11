@@ -2,7 +2,6 @@ var url = require('url'),
 	http = require('http'),
 	https = require('https'),
 	express = require('express'),
-	azure = require('azure'),
     app = express(),
     twilio = require('twilio'),
     twillioclient = new twilio.RestClient('AC7cebfd9670e2722045546150d437d42c', 'ad5ea2ae24aeaa80ce77fe676c9859f3');;
@@ -53,7 +52,7 @@ app.post('/searchresults', function (req, res) {
 			}
 		}
 
-		var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories, \'' + req.body.category + '\')%20ne%20-1';
+		var url = 'https://cloudsupport.azure-mobile.net/tables/providers?$filter=indexof(categories,\'' + req.body.category + '\')%20ne%20-1';
 		console.log(url)
 		httpGet(url, headers, callback);
 
